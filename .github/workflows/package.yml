@@ -38,6 +38,13 @@ jobs:
             GameData/SPACE_SHUTTLE_SYSTEM/ \
             "$STAGE/GameData/SPACE_SHUTTLE_SYSTEM/"
 
+          # RO physics configs for the SSS parts. Without these the parts would
+          # load with stock KSP physics (wrong mass, wrong fuel ratios, etc.).
+          mkdir -p "$STAGE/GameData/RealismOverhaul/RO_SuggestedMods/SpaceShuttleSystem"
+          rsync -a \
+            GameData/RealismOverhaul/RO_SuggestedMods/SpaceShuttleSystem/ \
+            "$STAGE/GameData/RealismOverhaul/RO_SuggestedMods/SpaceShuttleSystem/"
+
           # Our patches + plugin — exclude .pdb (debug symbols aren't needed in release)
           mkdir -p "$STAGE/GameData/NotEnoughShuttles"
           rsync -a --exclude='*.pdb' \
@@ -77,6 +84,7 @@ jobs:
           find staging -maxdepth 3 -type d | sort
           echo "::endgroup::"
           test -f staging/GameData/NotEnoughShuttles/Plugins/NotEnoughShuttles.dll || { echo "Missing plugin DLL"; exit 1; }
+          test -f staging/GameData/RealismOverhaul/RO_SuggestedMods/SpaceShuttleSystem/Engines.cfg || { echo "Missing RO Engines.cfg"; exit 1; }
           test -f staging/Ships/Script/Libraries/maths_library.ks                || { echo "Missing kOS library"; exit 1; }
           test -d staging/Ships/Script/Shuttle_OPS1                              || { echo "Missing OPS1 package"; exit 1; }
           test -d staging/Ships/Script/Shuttle_OPS3                              || { echo "Missing OPS3 package"; exit 1; }
