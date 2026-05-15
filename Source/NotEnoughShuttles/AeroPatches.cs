@@ -30,7 +30,6 @@ namespace NotEnoughShuttles
                 double MachNumber, double AoA, double skinFrictionCoefficient,
                 ref double ___Cl, ref double ___Cd)
             {
-                if (!NasaTables.TablesLoaded) return;
                 if (!TryGetOverrideTag(__instance, out var tag)) return;
                 if (!tag.InEnvelope(MachNumber, AoA)) return;
 
