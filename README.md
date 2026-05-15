@@ -18,6 +18,14 @@ Special thanks to FlandreScarlet1 for the Module Occlusion Heat and cockpit/rudd
 - `GameData/SPACE_SHUTTLE_SYSTEM/` — the shuttle parts mod (from upstream)
 - `kOS-Scripts/` — vendored giuliodondi kOS guidance scripts (ascent, entry, legacy reentry sim). See [kOS-Scripts/README.md](kOS-Scripts/README.md).
 
+## Licensing
+
+This is a layered fork — different folders trace back to different upstream authors with different stated licenses. See [LICENSING.md](LICENSING.md) for the full attribution map. The short version:
+
+- Original additions in this repo: **MIT** (see [LICENSE](LICENSE))
+- `GameData/SPACE_SHUTTLE_SYSTEM/`: **CC BY-NC-SA 4.0** (inherited from SpaceODY's fork, with GPL-2.0 components from the Orbiter2010 lineage)
+- Vendored kOS scripts: **CC BY 4.0** where stated by upstream; OPS1 has no upstream license and is vendored on a good-faith basis (see [NOTICE](kOS-Scripts/Shuttle-OPS1-ascent/NOTICE.md))
+
 ## Status
 
 Work in progress. See upstream for assembly instructions and full feature list.
