@@ -1,0 +1,112 @@
+name: Package
+
+on:
+  push:
+    branches: [master, main]
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write  # required for creating Releases on tag pushes
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Determine version
+        id: ver
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+            echo "version=${GITHUB_REF#refs/tags/v}" >> "$GITHUB_OUTPUT"
+            echo "is_release=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=dev-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+            echo "is_release=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Stage GameData
+        run: |
+          set -euo pipefail
+          STAGE="staging"
+          mkdir -p "$STAGE/GameData"
+
+          # SSS parts mod — exclude the dead FAR plugin DLL (can't bind against
+          # stock dkavolis FAR; replaced by our Harmony postfix).
+          rsync -a --exclude='FARShuttleAeroModel/' \
+            GameData/SPACE_SHUTTLE_SYSTEM/ \
+            "$STAGE/GameData/SPACE_SHUTTLE_SYSTEM/"
+
+          # Our patches + plugin — exclude .pdb (debug symbols aren't needed in release)
+          mkdir -p "$STAGE/GameData/NotEnoughShuttles"
+          rsync -a --exclude='*.pdb' \
+            GameData/NotEnoughShuttles/ \
+            "$STAGE/GameData/NotEnoughShuttles/"
+
+      - name: Stage Ships/Script (kOS scripts)
+        run: |
+          set -euo pipefail
+          STAGE="staging"
+          mkdir -p "$STAGE/Ships/Script"
+
+          # OPS1 + OPS3 share identical Libraries — safe to flatten both into one tree.
+          # rsync without trailing-slash specials: -a preserves perms, --ignore-existing
+          # would skip Library files after the first copy, but since they're identical
+          # bytes we don't bother. Plain layered copy.
+          rsync -a kOS-Scripts/Shuttle-OPS1-ascent/Ships/Script/ "$STAGE/Ships/Script/"
+          rsync -a kOS-Scripts/Shuttle-OPS3-entry/Ships/Script/ "$STAGE/Ships/Script/"
+
+          # EntrySim is intentionally NOT included — its Libraries diverge from OPS3
+          # and OPS3 supersedes it (per upstream OPS1 README:
+          # "no longer compatible with the older kOS-ShuttleEntrySim program").
+
+      - name: Stage top-level docs
+        run: |
+          STAGE="staging"
+          cp README.md LICENSE LICENSING.md "$STAGE/"
+          # Optional: include kOS-Scripts/README.md as a reference for the EntrySim
+          # archival package that we did NOT bundle, so users know it exists upstream.
+          mkdir -p "$STAGE/Ships/Script"
+          cp kOS-Scripts/README.md "$STAGE/Ships/Script/_kOS_NOTES.md"
+
+      - name: Verify expected layout
+        run: |
+          set -euo pipefail
+          echo "::group::staging tree (depth 3)"
+          find staging -maxdepth 3 -type d | sort
+          echo "::endgroup::"
+          test -f staging/GameData/NotEnoughShuttles/Plugins/NotEnoughShuttles.dll || { echo "Missing plugin DLL"; exit 1; }
+          test -f staging/Ships/Script/Libraries/maths_library.ks                || { echo "Missing kOS library"; exit 1; }
+          test -d staging/Ships/Script/Shuttle_OPS1                              || { echo "Missing OPS1 package"; exit 1; }
+          test -d staging/Ships/Script/Shuttle_OPS3                              || { echo "Missing OPS3 package"; exit 1; }
+          test ! -d staging/GameData/SPACE_SHUTTLE_SYSTEM/FARShuttleAeroModel    || { echo "Dead FAR DLL leaked into staging"; exit 1; }
+          echo "Layout OK."
+
+      - name: Create ZIP
+        id: zip
+        run: |
+          VERSION="${{ steps.ver.outputs.version }}"
+          ZIPNAME="NotEnoughShuttles-${VERSION}.zip"
+          cd staging
+          zip -r "../${ZIPNAME}" .
+          cd ..
+          echo "zipname=${ZIPNAME}" >> "$GITHUB_OUTPUT"
+          ls -lh "${ZIPNAME}"
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: NotEnoughShuttles-${{ steps.ver.outputs.version }}
+          path: ${{ steps.zip.outputs.zipname }}
+          if-no-files-found: error
+
+      - name: Create GitHub Release (on tag)
+        if: steps.ver.outputs.is_release == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "v${{ steps.ver.outputs.version }}" \
+            "${{ steps.zip.outputs.zipname }}" \
+            --title "NotEnoughShuttles v${{ steps.ver.outputs.version }}" \
+            --generate-notes
