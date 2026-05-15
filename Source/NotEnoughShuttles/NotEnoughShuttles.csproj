@@ -1,0 +1,56 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <AssemblyName>NotEnoughShuttles</AssemblyName>
+    <RootNamespace>NotEnoughShuttles</RootNamespace>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <OutputPath>$(MSBuildThisFileDirectory)..\..\GameData\NotEnoughShuttles\Plugins\</OutputPath>
+  </PropertyGroup>
+
+  <!-- KSPRoot is read from env var. Fallback to a common Windows path; override in your env. -->
+  <PropertyGroup>
+    <KSPRoot Condition="'$(KSPRoot)' == ''">$(KSP_ROOT)</KSPRoot>
+    <KSPRoot Condition="'$(KSPRoot)' == ''">D:\SteamLibrary\steamapps\common\Kerbal Space Program - RP1FT</KSPRoot>
+    <KSPManaged>$(KSPRoot)\KSP_x64_Data\Managed</KSPManaged>
+    <KSPGameData>$(KSPRoot)\GameData</KSPGameData>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- KSP core -->
+    <Reference Include="Assembly-CSharp">
+      <HintPath>$(KSPManaged)\Assembly-CSharp.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Assembly-CSharp-firstpass">
+      <HintPath>$(KSPManaged)\Assembly-CSharp-firstpass.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>$(KSPManaged)\UnityEngine.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>$(KSPManaged)\UnityEngine.CoreModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+
+    <!-- Harmony (shipped with RP-1 via KSPCommunityFixes) -->
+    <Reference Include="0Harmony">
+      <HintPath>$(KSPGameData)\000_Harmony\0Harmony.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+
+    <!-- FAR — for FARWingAerodynamicModel type reference -->
+    <Reference Include="FerramAerospaceResearch">
+      <HintPath>$(KSPGameData)\FerramAerospaceResearch\Plugins\FerramAerospaceResearch.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+</Project>

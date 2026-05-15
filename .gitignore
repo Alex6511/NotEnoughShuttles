@@ -1,0 +1,6 @@
+# Build intermediates
+Source/**/bin/
+Source/**/obj/
+*.user
+*.suo
+.vs/
