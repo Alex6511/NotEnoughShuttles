@@ -13,6 +13,11 @@ The goal is to make every part of the SSS shuttle stack appear and function corr
 
 Special thanks to FlandreScarlet1 for the Module Occlusion Heat and cockpit/rudder modelling work carried over from upstream.
 
+## Contents
+
+- `GameData/SPACE_SHUTTLE_SYSTEM/` — the shuttle parts mod (from upstream)
+- `kOS-Scripts/` — vendored giuliodondi kOS guidance scripts (ascent, entry, legacy reentry sim). See [kOS-Scripts/README.md](kOS-Scripts/README.md).
+
 ## Status
 
 Work in progress. See upstream for assembly instructions and full feature list.
